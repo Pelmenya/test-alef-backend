@@ -1,9 +1,10 @@
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from './user.entity';
 import { Repository } from 'typeorm';
 import { TUser } from './types/t.user';
 import { UserDTO } from './types/user.dto';
+import { ERROR, numberOfChild } from './constants/constants';
 
 @Injectable()
 export class UserService {
@@ -38,11 +39,8 @@ export class UserService {
   }
 
   async createUser(dto: UserDTO) {
-    const { father, mother } = dto;
-    if (father) {
-    }
-    if (mother) {
-    }
+    await this.checkCountOfChild(dto);
+
     const newUser = this.userRepository.create(dto);
 
     await this.userRepository.save(newUser);
@@ -50,7 +48,27 @@ export class UserService {
     return await this.getUserById(newUser.user_id);
   }
 
-  async checkCountChild(dto: UserDTO) {
-    return dto.father;
+  async checkCountOfChild(dto: UserDTO) {
+    const { father, mother } = dto;
+    if (father) {
+      const countChildByFather = await this.userRepository.query(`
+            SELECT 
+                COUNT(*)
+            FROM public."user" pu
+            WHERE pu."fatherUserId" = ${father};`);
+      if (countChildByFather[0].count >= numberOfChild) {
+        throw new BadRequestException(ERROR.numberOfChildByFather);
+      }
+    }
+    if (mother) {
+      const countChildByMother = await this.userRepository.query(`
+        SELECT 
+            COUNT(*)
+        FROM public."user" pu
+        WHERE pu."motherUserId" = ${mother};`);
+      if (countChildByMother[0].count >= numberOfChild) {
+        throw new BadRequestException(ERROR.numberOfChildByMother);
+      }
+    }
   }
 }
