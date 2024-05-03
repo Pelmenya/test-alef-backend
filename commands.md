@@ -8,13 +8,13 @@
 docker compose -f docker-compose.dev.yml up --build
 ```
 
-# Сделать дамп бд
+# Сделать дамп бд (CMD)
 
 ```
 docker exec -i postgres /bin/bash -c "PGPASSWORD=secret pg_dump --username root alef" > ./dump/dump.sql
 ```
 
-# Развернуть дамп бд
+# Развернуть дамп бд (CMD)
 
 ```
 docker exec -i postgres /bin/bash -c "PGPASSWORD=secret psql --username root alef" < ./dump/dump.sql
