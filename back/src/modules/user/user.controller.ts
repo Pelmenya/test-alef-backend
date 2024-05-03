@@ -1,5 +1,4 @@
 import {
-  BadRequestException,
   Body,
   Controller,
   Delete,
@@ -7,12 +6,11 @@ import {
   Param,
   Post,
   Put,
-  Query,
 } from '@nestjs/common';
 import { UserService } from './user.service';
 import { UserDTO } from './types/user.dto';
 import { IdValidationPipe } from 'src/pipes/id-validation/id-validation.pipe';
-import { ERROR } from './constants/constants';
+import { ChildsDTO } from './types/childs.dto';
 
 @Controller('user')
 export class UserController {
@@ -36,15 +34,9 @@ export class UserController {
   @Delete(':id/childs')
   async deleteChildsByIds(
     @Param('id', IdValidationPipe) id: number,
-    @Query() query: { ids: string },
+    @Body() dto: ChildsDTO,
   ) {
-    const ids: number[] = JSON.parse(query.ids);
-    if (Array.isArray(ids)) {
-      if (ids.length) {
-        return await this.userService.deleteChildsByIds(id, ids.join(', '));
-      }
-    }
-    throw new BadRequestException(ERROR.NOT_ARRAY);
+    return await this.userService.deleteChildsByIds(id, dto.ids.join(', '));
   }
 
   @Post()
