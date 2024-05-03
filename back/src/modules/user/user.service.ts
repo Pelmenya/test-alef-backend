@@ -51,14 +51,14 @@ export class UserService {
     `);
   }
 
-  async deleteChildsByIds(ids: string): Promise<TUser> {
+  async deleteChildsByIds(id: number, ids: string): Promise<TUser> {
     return await this.userRepository.query(`
-        UPDATE public."user" 
-	        SET "motherUserId" = NULL
-        WHERE "motherUserId" IN (${ids});
-        UPDATE public."user"
-          SET "fatherUserId" = NULL
-        WHERE "fatherUserId" IN (${ids});
+      UPDATE public."user" 
+        SET "motherUserId" = NULL
+      WHERE  "motherUserId" = ${id} AND user_id IN (${ids});
+      UPDATE public."user" 
+        SET "fatherUserId" = NULL
+      WHERE  "fatherUserId" = ${id} AND user_id IN (${ids});
     `);
   }
 

@@ -33,12 +33,15 @@ export class UserController {
     return await this.userService.getUserChilds(id);
   }
 
-  @Delete('childs')
-  async deleteChildsByIds(@Query() query: { ids: string }) {
+  @Delete(':id/childs')
+  async deleteChildsByIds(
+    @Param('id', IdValidationPipe) id: number,
+    @Query() query: { ids: string },
+  ) {
     const ids: number[] = JSON.parse(query.ids);
     if (Array.isArray(ids)) {
       if (ids.length) {
-        return await this.userService.deleteChildsByIds(ids.join(', '));
+        return await this.userService.deleteChildsByIds(id, ids.join(', '));
       }
     }
     throw new BadRequestException(ERROR.NOT_ARRAY);
