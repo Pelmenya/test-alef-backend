@@ -52,7 +52,17 @@ export class UserService {
   }
 
   async deleteChildsByIds(id: number, ids: string): Promise<TUser> {
-    return await this.userRepository.query(`
+    const numChilds = await this.userRepository.query(`
+      SELECT COUNT(*) deleted
+        FROM (
+          SELECT * FROM public."user" 
+          WHERE  "motherUserId" = ${id} AND user_id IN (${ids})
+          UNION
+          SELECT * FROM public."user" 
+          WHERE  "fatherUserId" = ${id} AND user_id IN (${ids})
+    ) sub;
+  `);
+    await this.userRepository.query(`
       UPDATE public."user" 
         SET "motherUserId" = NULL
       WHERE  "motherUserId" = ${id} AND user_id IN (${ids});
@@ -60,6 +70,7 @@ export class UserService {
         SET "fatherUserId" = NULL
       WHERE  "fatherUserId" = ${id} AND user_id IN (${ids});
     `);
+    return numChilds;
   }
 
   async createUser(dto: UserDTO) {
