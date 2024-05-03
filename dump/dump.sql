@@ -70,8 +70,13 @@ ALTER TABLE ONLY public."user" ALTER COLUMN user_id SET DEFAULT nextval('public.
 
 COPY public."user" (user_id, fio, age, "motherUserId", "fatherUserId") FROM stdin;
 1	Федя Пупкин	40	\N	\N
-2	Люся Пупкина\n	38	\N	\N
 5	Slbert Jonson	15	\N	\N
+2	Ляся Пупкина	14	32	33
+37	Albert Jonson Jr.	100	33	32
+38	Albert Jonson Jr.	100	33	32
+39	Albert Jonson Jr.	100	33	32
+40	Albert Jonson Jr.	100	33	32
+41	Albert Jonson Jr.	100	33	32
 30	Albert Jonson Jr.	14	1	2
 31	Albert Jonson Jr.	14	1	2
 32	Albert Jonson M.	45	\N	\N
@@ -84,7 +89,7 @@ COPY public."user" (user_id, fio, age, "motherUserId", "fatherUserId") FROM stdi
 -- Name: user_user_id_seq; Type: SEQUENCE SET; Schema: public; Owner: root
 --
 
-SELECT pg_catalog.setval('public.user_user_id_seq', 36, true);
+SELECT pg_catalog.setval('public.user_user_id_seq', 42, true);
 
 
 --
