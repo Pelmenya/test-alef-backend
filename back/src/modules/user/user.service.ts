@@ -38,6 +38,30 @@ export class UserService {
     `);
   }
 
+  async getUserChilds(id: number): Promise<TUser> {
+    return await this.userRepository.query(`
+        SELECT 
+	        pu.user_id AS id, 
+	        pu.fio, 
+	        pu.age, 
+	        (SELECT pm.fio FROM public."user" pm WHERE pu."motherUserId" = pm.user_id) mother,
+	        (SELECT pf.fio FROM public."user" pf WHERE pu."fatherUserId" = pf.user_id) father
+        FROM public."user" pu 
+        WHERE pu."motherUserId" = ${id} OR pu."fatherUserId" = ${id};
+    `);
+  }
+
+  async deleteChildsByIds(id: number, ids: string): Promise<TUser> {
+    return await this.userRepository.query(`
+        UPDATE public."user" 
+	        SET "motherUserId" = NULL
+        WHERE "motherUserId" IN (${ids});
+        UPDATE public."user"
+          SET "fatherUserId" = NULL
+        WHERE "fatherUserId" IN (${ids});
+    `);
+  }
+
   async createUser(dto: UserDTO) {
     await this.checkCountOfChild(dto);
 
@@ -48,14 +72,32 @@ export class UserService {
     return await this.getUserById(newUser.user_id);
   }
 
+  async updateUser(dto: UserDTO) {
+    await this.checkCountOfChild(dto);
+
+    const { user_id, fio, age, father, mother } = dto;
+
+    await this.userRepository.query(`
+      UPDATE public."user"
+        SET 
+          "fio" = '${fio}',
+          "age" = ${age},
+          "motherUserId" = ${mother || null},
+          "fatherUserId" = ${father || null}
+      WHERE user_id = ${user_id}
+    `);
+
+    return await this.getUserById(user_id);
+  }
+
   async checkCountOfChild(dto: UserDTO) {
     const { father, mother } = dto;
     if (father) {
       const countChildByFather = await this.userRepository.query(`
-            SELECT 
-                COUNT(*)
-            FROM public."user" pu
-            WHERE pu."fatherUserId" = ${father};`);
+        SELECT 
+            COUNT(*)
+        FROM public."user" pu
+        WHERE pu."fatherUserId" = ${father};`);
       if (countChildByFather[0].count >= numberOfChild) {
         throw new BadRequestException(ERROR.numberOfChildByFather);
       }
