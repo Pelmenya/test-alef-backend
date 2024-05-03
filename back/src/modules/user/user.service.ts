@@ -51,7 +51,7 @@ export class UserService {
     `);
   }
 
-  async deleteChildsByIds(id: number, ids: string): Promise<TUser> {
+  async deleteChildsByIds(ids: string): Promise<TUser> {
     return await this.userRepository.query(`
         UPDATE public."user" 
 	        SET "motherUserId" = NULL
@@ -99,7 +99,7 @@ export class UserService {
         FROM public."user" pu
         WHERE pu."fatherUserId" = ${father};`);
       if (countChildByFather[0].count >= numberOfChild) {
-        throw new BadRequestException(ERROR.numberOfChildByFather);
+        throw new BadRequestException(ERROR.NUMBER_CHILD_FATHER);
       }
     }
     if (mother) {
@@ -109,7 +109,7 @@ export class UserService {
         FROM public."user" pu
         WHERE pu."motherUserId" = ${mother};`);
       if (countChildByMother[0].count >= numberOfChild) {
-        throw new BadRequestException(ERROR.numberOfChildByMother);
+        throw new BadRequestException(ERROR.NUMBER_CHILD_MOTHER);
       }
     }
   }

@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   Body,
   Controller,
   Delete,
@@ -10,6 +11,8 @@ import {
 } from '@nestjs/common';
 import { UserService } from './user.service';
 import { UserDTO } from './types/user.dto';
+import { IdValidationPipe } from 'src/pipes/id-validation/id-validation.pipe';
+import { ERROR } from './constants/constants';
 
 @Controller('user')
 export class UserController {
@@ -21,24 +24,24 @@ export class UserController {
   }
 
   @Get(':id')
-  async getUserById(@Param('id') id: number) {
+  async getUserById(@Param('id', IdValidationPipe) id: number) {
     return await this.userService.getUserById(id);
   }
 
   @Get(':id/childs')
-  async getUserChilds(@Param('id') id: number) {
+  async getUserChilds(@Param('id', IdValidationPipe) id: number) {
     return await this.userService.getUserChilds(id);
   }
 
-  @Delete(':id/childs')
-  async deleteChildsByIds(
-    @Param('id') id: number,
-    @Query() query: { ids: string },
-  ) {
-    return await this.userService.deleteChildsByIds(
-      id,
-      JSON.parse(query.ids).join(', '),
-    );
+  @Delete('childs')
+  async deleteChildsByIds(@Query() query: { ids: string }) {
+    const ids: number[] = JSON.parse(query.ids);
+    if (Array.isArray(ids)) {
+      if (ids.length) {
+        return await this.userService.deleteChildsByIds(ids.join(', '));
+      }
+    }
+    throw new BadRequestException(ERROR.NOT_ARRAY);
   }
 
   @Post()
